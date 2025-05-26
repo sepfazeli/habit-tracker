@@ -6,7 +6,10 @@ WORKDIR /app
 RUN corepack enable \
  && corepack prepare pnpm@latest --activate
 
-COPY package*.json ./
+# Copy both package manifest and lockfile
+COPY package.json pnpm-lock.yaml ./
+
+# Install exactly what's in pnpm-lock.yaml
 RUN pnpm install --frozen-lockfile
 
 # ─── STAGE 2: builder ───────────────────────────────────────────────────────────
@@ -23,7 +26,7 @@ FROM node:18-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Copy only what’s needed to run
+# Copy only what's needed to run
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
